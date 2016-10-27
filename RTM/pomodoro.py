@@ -71,7 +71,7 @@ def timer(run):
             # Increment the minute total
             mins += 1
             # Bring up the dialog box here
-    return str(mins + total_mins) + 'm'
+    return mins + total_mins
 
 def user_select():
     with open(file_name + '.csv') as csvfile:
@@ -97,8 +97,11 @@ def createApp(rtm):
         tasks = csv.reader(csvfile, delimiter=',')
         for n, i in enumerate(tasks, start=1):
             if task_num == n:
+                total_time = timer('start')
                 rtm.tasks.setEstimate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
-                task_id= i[2], estimate= timer('start'))
+                task_id= i[2], estimate= str(total_time) + 'm')
+                rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
+                task_id= i[2], note_title= 'API_note', note_text= 'pomodoro ' + str(total_time/25))
 
 # creates RTM (the API keys and token)
 def test(apiKey, secret, token=None):
