@@ -7,10 +7,8 @@ from sys import argv
 import csv, time, json
 
 script, run_search = argv
-print script
-print run_search
+
 if run_search == 'yes':
-    print
     search = raw_input("What is the search you want to run? ")
 
 file_name = 'work'
@@ -43,7 +41,7 @@ def add_time(time):
                     time_all.append(int(i[2:3]))
                 if len(i) == 5:
                     time_all.append(int(i[2:4]))
-    return time_sum = sum(time_all)
+    return sum(time_all)
 
 def ascii_only(text):
     return ''.join(i for i in text if ord(i)<128)
@@ -89,25 +87,25 @@ def parseJson(file):
         for i in ids_list:
             writer.writerow(i)
 
-def timer(run, prev_minutes):
+def timer(run):
     mins = 0
     # total_mins = int(raw_input("How many minutes have you already worked on this task? "))
     if run == "start":
         # Loop until we reach 25 minutes running
-        while mins != 25:
+        while mins != 2:
             print ">>>>>>>>>>>>>>>>>>>>>", mins
             # Sleep for a minute
             time.sleep(60)
             # Increment the minute total
             mins += 1
             # Bring up the dialog box here
-    return mins + prev_minutes
+    return mins
 
 def user_select():
     with open(file_name + '.csv') as csvfile:
         tasks = csv.reader(csvfile, delimiter=',')
         for n, i in enumerate(tasks, start=1):
-            print (n,': ' + i[3])
+            print (str(n) + ': ' + i[3])
         index = int(raw_input("Choose which task you want to work on "))
         return index
 
@@ -129,7 +127,9 @@ def createApp(rtm):
         for n, i in enumerate(tasks, start=1):
             if task_num == n:
                 minutes.append(i[6])
-                total_time = timer('start', add_time(minutes))
+                print add_time(minutes)
+                total_time = timer('start') + add_time(minutes)
+                print total_time
                 rtm.tasks.setEstimate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
                 task_id= i[2], estimate= str(total_time) + 'm')
                 rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
