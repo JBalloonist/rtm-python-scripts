@@ -15,6 +15,36 @@ if run_search == 'yes':
 
 file_name = 'work'
 
+# function to get the time already spent on a task
+
+def add_time(time):
+    time_all = list()
+    for i in time:
+        print i
+        if 'minutes' in i:
+            if 'hour' in i:
+                time_all.append(int(i[0:1])*60)
+                time_all.append(int(i[8:10]))
+            else:
+                ending = len(i) - 8
+                time_all.append(int(i[0:ending]))
+        else:
+            if 'H' in i:
+                if len(i) == 4:
+                    time_all.append(int(i[2:3])*60)
+                if len(i) == 6:
+                    time_all.append(int(i[2:3])*60)
+                    time_all.append(int(i[4:5]))
+                if len(i) == 7:
+                    time_all.append(int(i[2:3])*60)
+                    time_all.append(int(i[4:6]))
+            else:
+                if len(i) == 4:
+                    time_all.append(int(i[2:3]))
+                if len(i) == 5:
+                    time_all.append(int(i[2:4]))
+    return time_sum = sum(time_all)
+
 def ascii_only(text):
     return ''.join(i for i in text if ord(i)<128)
 
@@ -59,9 +89,9 @@ def parseJson(file):
         for i in ids_list:
             writer.writerow(i)
 
-def timer(run):
+def timer(run, prev_minutes):
     mins = 0
-    total_mins = int(raw_input("How many minutes have you already worked on this task? "))
+    # total_mins = int(raw_input("How many minutes have you already worked on this task? "))
     if run == "start":
         # Loop until we reach 25 minutes running
         while mins != 25:
@@ -71,7 +101,7 @@ def timer(run):
             # Increment the minute total
             mins += 1
             # Bring up the dialog box here
-    return mins + total_mins
+    return mins + prev_minutes
 
 def user_select():
     with open(file_name + '.csv') as csvfile:
@@ -90,6 +120,7 @@ def createApp(rtm):
                 out.write(i)
     parseJson(file_name + '.json')
     task_num = user_select()
+    minutes = list()
     # timelines never expire
     #just hardcoding one instead of getting new one every time
     timelineNum = '1053897822'
@@ -97,7 +128,8 @@ def createApp(rtm):
         tasks = csv.reader(csvfile, delimiter=',')
         for n, i in enumerate(tasks, start=1):
             if task_num == n:
-                total_time = timer('start')
+                minutes.append(i[6])
+                total_time = timer('start', add_time(minutes))
                 rtm.tasks.setEstimate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
                 task_id= i[2], estimate= str(total_time) + 'm')
                 rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
