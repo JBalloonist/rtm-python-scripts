@@ -3,17 +3,28 @@
 
 # from rtm import createRTM
 from rtm_json import createRTM
-from sys import argv
 import csv, time, json
 
-"""
-script, run_search = argv
+searches = ['list:work-today and status:incomplete',
+            'list:work and due:tod and status:incomplete',
+            'list:work and priority:1 and status:incomplete',
+            'list:work and status:incomplete']
 
-if run_search == 'yes':
-    search = raw_input("What is the search you want to run? ")
-"""
+for n, i in enumerate(searches, start=1):
+    print (str(n) + ': ' + i)
+print " "
+
+ind = int(raw_input('Which search would you like to run? Enter zero if you would like to enter your own search: '))
+for n, i in enumerate(searches, start=1):
+    if n == ind:
+        search = i
+        break
+    else:
+        search = raw_input('Enter your search: ')
+        break
+
 run_search = 'yes'
-search = raw_input("What is the search you want to run? ")
+# search = 'list:work and (due:tod OR priority:1)'
 file_name = 'work'
 
 # function to get the time already spent on a task
@@ -112,6 +123,8 @@ def user_select():
         tasks = csv.reader(csvfile, delimiter=',')
         for n, i in enumerate(tasks, start=1):
             print (str(n) + ': ' + i[3])
+        # print '\n'
+        print " "
         index = int(raw_input("Choose which task you want to work on "))
         return index
 
@@ -135,7 +148,8 @@ def createApp(rtm):
                 minutes.append(i[6])
                 print 'Existing time: ' + str(add_time(minutes))
                 total_time = timer('start') + add_time(minutes)
-                print 'Total time: ' + str(total_time)
+                print 'Total time: ' + str(total_time / 60) + ' hours ' + str(total_time % 60) + ' minutes'
+                # print 'Total time: ' + str(total_time)
                 rtm.tasks.setEstimate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
                 task_id= i[2], estimate= str(total_time) + 'm')
                 rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
