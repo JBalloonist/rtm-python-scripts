@@ -6,11 +6,14 @@ from rtm_json import createRTM
 from sys import argv
 import csv, time, json
 
+"""
 script, run_search = argv
 
 if run_search == 'yes':
     search = raw_input("What is the search you want to run? ")
-
+"""
+run_search = 'yes'
+search = raw_input("What is the search you want to run? ")
 file_name = 'work'
 
 # function to get the time already spent on a task
@@ -36,6 +39,9 @@ def add_time(time):
                 if len(i) == 7:
                     time_all.append(int(i[2:3])*60)
                     time_all.append(int(i[4:6]))
+            if i.endswith('m'):
+                print i.replace('m', "")
+                time_all.append(int(i.replace('m', "")))
             else:
                 if len(i) == 4:
                     time_all.append(int(i[2:3]))
@@ -92,7 +98,7 @@ def timer(run):
     # total_mins = int(raw_input("How many minutes have you already worked on this task? "))
     if run == "start":
         # Loop until we reach 25 minutes running
-        while mins != 2:
+        while mins != 25:
             print ">>>>>>>>>>>>>>>>>>>>>", mins
             # Sleep for a minute
             time.sleep(60)
@@ -127,13 +133,13 @@ def createApp(rtm):
         for n, i in enumerate(tasks, start=1):
             if task_num == n:
                 minutes.append(i[6])
-                print add_time(minutes)
+                print 'Existing time: ' + str(add_time(minutes))
                 total_time = timer('start') + add_time(minutes)
-                print total_time
+                print 'Total time: ' + str(total_time)
                 rtm.tasks.setEstimate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
                 task_id= i[2], estimate= str(total_time) + 'm')
                 rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
-                task_id= i[2], note_title= 'API_note', note_text= 'pomodoro ' + str(total_time/25))
+                task_id= i[2], note_title= 'pomodoro ' + str(total_time/25), note_text= ' ')
 
 # creates RTM (the API keys and token)
 def test(apiKey, secret, token=None):
