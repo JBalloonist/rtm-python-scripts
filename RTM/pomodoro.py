@@ -3,7 +3,10 @@
 
 # from rtm import createRTM
 from rtm_json import createRTM
-import csv, time, json
+import csv, time, json, datetime
+
+now = datetime.datetime.now()
+todays_date = str(now.month) + '-' + str(now.day) + '-' + str(now.year)
 
 searches = ['list:work-today and status:incomplete',
             'list:work and due:tod and status:incomplete',
@@ -27,12 +30,15 @@ run_search = 'yes'
 # search = 'list:work and (due:tod OR priority:1)'
 file_name = 'work'
 
-# function to get the time already spent on a task
+def all_pom(text):
+    with open('/home/JBalloonist/RTM/pomodoro/' + todays_date + '.txt', 'wb') as out:
+        out.write(text)
 
+# function to get the time already spent on a task
 def add_time(time):
     time_all = list()
     for i in time:
-        print i
+        # print i
         if 'minutes' in i:
             if 'hour' in i:
                 time_all.append(int(i[0:1])*60)
@@ -51,7 +57,7 @@ def add_time(time):
                     time_all.append(int(i[2:3])*60)
                     time_all.append(int(i[4:6]))
             if i.endswith('m'):
-                print i.replace('m', "")
+                # print i.replace('m', "")
                 time_all.append(int(i.replace('m', "")))
             else:
                 if len(i) == 4:
@@ -145,8 +151,10 @@ def createApp(rtm):
         tasks = csv.reader(csvfile, delimiter=',')
         for n, i in enumerate(tasks, start=1):
             if task_num == n:
+                # rtm.tasks.setDueDate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
+                # task_id= i[2], due='25 minutes', has_due_time='1', parse='1')
                 minutes.append(i[6])
-                print 'Existing time: ' + str(add_time(minutes))
+                print 'Existing time: ' + str(add_time(minutes) / 60) + ' hours ' + str(add_time(minutes) % 60) + ' minutes'
                 total_time = timer('start') + add_time(minutes)
                 print 'Total time: ' + str(total_time / 60) + ' hours ' + str(total_time % 60) + ' minutes'
                 # print 'Total time: ' + str(total_time)
@@ -154,6 +162,7 @@ def createApp(rtm):
                 task_id= i[2], estimate= str(total_time) + 'm')
                 rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
                 task_id= i[2], note_title= 'pomodoro ' + str(total_time/25), note_text= ' ')
+                all_pom(i)
 
 # creates RTM (the API keys and token)
 def test(apiKey, secret, token=None):
