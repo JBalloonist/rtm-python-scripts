@@ -5,8 +5,8 @@
 from rtm_json import createRTM
 import csv, time, json, datetime
 
-now = datetime.datetime.now()
-todays_date = str(now.month) + '-' + str(now.day) + '-' + str(now.year)
+# now = datetime.datetime.now()
+# todays_date = str(now.month) + '-' + str(now.day) + '-' + str(now.year)
 
 searches = ['list:work-today and status:incomplete',
             'list:work and due:tod and status:incomplete',
@@ -31,7 +31,7 @@ run_search = 'yes'
 file_name = 'work'
 
 def all_pom(text):
-    with open('/home/JBalloonist/RTM/pomodoro/' + todays_date + '.txt', 'wb') as out:
+    with open('/home/JBalloonist/RTM/pomodoro/' + todays_date + '.txt', 'a') as out:
         out.write(text)
 
 # function to get the time already spent on a task
@@ -147,12 +147,14 @@ def createApp(rtm):
     # timelines never expire
     #just hardcoding one instead of getting new one every time
     timelineNum = '1053897822'
+    now = datetime.datetime.now() + (datetime.timedelta(minutes=35))
+    due_time = now.isoformat()
     with open(file_name + '.csv') as csvfile:
         tasks = csv.reader(csvfile, delimiter=',')
         for n, i in enumerate(tasks, start=1):
             if task_num == n:
-                # rtm.tasks.setDueDate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
-                # task_id= i[2], due='25 minutes', has_due_time='1', parse='1')
+                rtm.tasks.setDueDate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
+                task_id= i[2], due=due_time, has_due_time='1', parse='0')
                 minutes.append(i[6])
                 print 'Existing time: ' + str(add_time(minutes) / 60) + ' hours ' + str(add_time(minutes) % 60) + ' minutes'
                 total_time = timer('start') + add_time(minutes)
@@ -162,7 +164,7 @@ def createApp(rtm):
                 task_id= i[2], estimate= str(total_time) + 'm')
                 rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
                 task_id= i[2], note_title= 'pomodoro ' + str(total_time/25), note_text= ' ')
-                all_pom(i)
+                all_pom(i[3] + ' - pomodoro ' + str(total_time/25))
 
 # creates RTM (the API keys and token)
 def test(apiKey, secret, token=None):
