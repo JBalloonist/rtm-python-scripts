@@ -5,8 +5,8 @@
 from rtm_json import createRTM
 import csv, time, json, datetime
 
-# now = datetime.datetime.now()
-# todays_date = str(now.month) + '-' + str(now.day) + '-' + str(now.year)
+now = datetime.datetime.now()
+todays_date = str(now.month) + '-' + str(now.day) + '-' + str(now.year)
 
 searches = ['list:work-today and status:incomplete',
             'list:work and due:tod and status:incomplete',
@@ -31,8 +31,9 @@ run_search = 'yes'
 file_name = 'work'
 
 def all_pom(text):
-    with open('/home/JBalloonist/RTM/pomodoro/' + todays_date + '.txt', 'a') as out:
-        out.write(text)
+    now = datetime.datetime.now()
+    with open('/home/JBalloonist/RTM/pomodoro/tracking.txt', 'a') as out:
+        out.write(now.isoformat() + ' - ' + text +  '\n')
 
 # function to get the time already spent on a task
 def add_time(time):
@@ -131,7 +132,7 @@ def user_select():
             print (str(n) + ': ' + i[3])
         # print '\n'
         print " "
-        index = int(raw_input("Choose which task you want to work on "))
+        index = int(raw_input("Choose which task you want to work on: "))
         return index
 
 def createApp(rtm):
@@ -147,7 +148,7 @@ def createApp(rtm):
     # timelines never expire
     #just hardcoding one instead of getting new one every time
     timelineNum = '1053897822'
-    now = datetime.datetime.now() + (datetime.timedelta(minutes=35))
+    now = datetime.datetime.now() + (datetime.timedelta(minutes=25))
     due_time = now.isoformat()
     with open(file_name + '.csv') as csvfile:
         tasks = csv.reader(csvfile, delimiter=',')
