@@ -3,12 +3,6 @@ import rtm_addtasks, time
 html_doc = open('Tableau 10 Essential Training.html', 'r')
 soup = BeautifulSoup(html_doc, 'html.parser')
 
-# conversion dictionary
-minutes_per_unit = {"m": 1, "h": 60, "d": 1440, "w": 10080}
-
-def convert_to_minutes(m):
-    return int(m[:-1]) * minutes_per_unit[m[-1]]
-
 titles = list()
 contents = list()
 duration = list()
