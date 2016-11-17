@@ -9,10 +9,15 @@ now = datetime.datetime.now()
 todays_date = str(now.month) + '-' + str(now.day) + '-' + str(now.year)
 
 searches = ['custom search',
-            'list:work-today and status:incomplete',
-            'list:work and due:tod and status:incomplete',
-            'list:work and priority:1 and status:incomplete',
-            'list:work and status:incomplete']
+            'list:Work-week and status:incomplete',
+            'list:work-week and priority:1 and status:incomplete',
+            'list:Work-week and due:tod and status:incomplete',
+            'list:work-Projects and status:incomplete',
+            'list:work-Projects priority:1 and status:incomplete',]
+
+# lists for the hardcoded
+take_break = ['36712370','306248407','525099979','Take a break from working on ']
+break_over = ['36712370','306248422','525100002', 'Your break is over, get back to work!']
 
 for n, i in enumerate(searches):
     print (str(n) + ': ' + i)
@@ -28,8 +33,6 @@ for n, i in enumerate(searches):
         search = raw_input('Enter your search: ')
         break
 
-print 'Search ' + search
-
 run_search = 'yes'
 # search = 'list:work and (due:tod OR priority:1)'
 file_name = 'work'
@@ -43,8 +46,9 @@ def all_pom(text_one, text_two):
     tracking_list.append(text_one)
     tracking_list.append(text_two)
     pom_list.append(tracking_list)
+    tracking_file = '/home/JBalloonist/RTM/pomodoro/' + now.strftime('%B') + '-tracking.csv'
 
-    with open('/home/JBalloonist/RTM/pomodoro/' + now.strftime('%B') + '-tracking.csv', 'a') as f:
+    with open(tracking_file, 'a') as f:
         writer = csv.writer(f)
         for i in pom_list:
             writer.writerow(i)
@@ -65,6 +69,8 @@ def add_time(time):
             if 'H' in i:
                 if len(i) == 4:
                     time_all.append(int(i[2:3])*60)
+                if len(i) == 5:
+                    time_all.append(int(i[2:4])*60)
                 if len(i) == 6:
                     time_all.append(int(i[2:3])*60)
                     time_all.append(int(i[4:5]))
@@ -74,7 +80,7 @@ def add_time(time):
             if i.endswith('m'):
                 # print i.replace('m', "")
                 time_all.append(int(i.replace('m', "")))
-            else:
+            if 'M' in i:
                 if len(i) == 4:
                     time_all.append(int(i[2:3]))
                 if len(i) == 5:
@@ -150,6 +156,20 @@ def user_select():
         index = int(raw_input("Choose which task you want to work on: "))
         return index
 
+def pom_count():
+    now = datetime.datetime.now()
+    tracking_file = '/home/JBalloonist/RTM/pomodoro/' + now.strftime('%B') + '-tracking.csv'
+    with open(tracking_file) as csvfile:
+        tasks = csv.reader(csvfile, delimiter=',')
+        counter = 0
+        for i in tasks:
+            if i[0][0:10] == now.isoformat()[0:10]:
+                counter = counter + 1
+        if counter % 4 == 0:
+            print 'Time to take a longer break!'
+        else:
+            print 'Sorry, you only get a five minute break this time.'
+
 def createApp(rtm):
     global run_search
     print search
@@ -171,13 +191,24 @@ def createApp(rtm):
         tasks = csv.reader(csvfile, delimiter=',')
         for n, i in enumerate(tasks, start=1):
             if task_num == n:
-                rtm.tasks.setDueDate(timeline= timelineNum, list_id= i[0],
-                taskseries_id= i[1], task_id= i[2], due=pom_end, has_due_time='1', parse='0')
+                # set the due date of the take a break task
+                rtm.tasks.setDueDate(timeline= timelineNum, list_id= '10509737',
+                taskseries_id= '306248407', task_id= '525099979', due=pom_end,
+                has_due_time='1', parse='0')
+
+                # change the name of the break task reminder
+                rtm.tasks.setName(timeline= timelineNum, list_id= '10509737',
+                taskseries_id= '306248407', task_id= '525099979',
+                name= (take_break[3] + '- ' + i[3]))
+
                 minutes.append(i[6])
                 if add_time(minutes) == 0:
                     rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0],
                     taskseries_id= i[1],task_id= i[2], note_title='Original Due Date', note_text=i[7])
+
+                print add_time(minutes)
                 print 'Existing time: ' + str(add_time(minutes) / 60) + ' hours ' + str(add_time(minutes) % 60) + ' minutes'
+
                 total_time = timer('start') + add_time(minutes)
                 print 'Total time: ' + str(total_time / 60) + ' hours ' + str(total_time % 60) + ' minutes'
 
@@ -189,8 +220,16 @@ def createApp(rtm):
 
                 all_pom(i[3], 'pomodoro ' + str(total_time/25))
 
-                rtm.tasks.setDueDate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
-                task_id= i[2], due=break_end_time, has_due_time='1', parse='0')
+                rtm.tasks.setDueDate(timeline= timelineNum, list_id= '10509737',
+                taskseries_id= '306248422', task_id= '525100002', due=break_end_time,
+                has_due_time='1', parse='0')
+
+    # set the due date of the break over task
+    rtm.tasks.setDueDate(timeline= timelineNum, list_id= '10509737',
+    taskseries_id= '306248407', task_id= '525100002', due=break_end_time,
+    has_due_time='1', parse='0')
+
+    pom_count()
 
 # creates RTM (the API keys and token)
 def test(apiKey, secret, token=None):
