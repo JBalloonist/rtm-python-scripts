@@ -165,10 +165,7 @@ def pom_count():
         for i in tasks:
             if i[0][0:10] == now.isoformat()[0:10]:
                 counter = counter + 1
-        if counter % 4 == 0:
-            print 'Time to take a longer break!'
-        else:
-            print 'Sorry, you only get a five minute break this time.'
+        return counter
 
 def createApp(rtm):
     global run_search
@@ -185,8 +182,8 @@ def createApp(rtm):
     #just hardcoding one instead of getting new one every time
     timelineNum = '1053897822'
     now = datetime.datetime.now()
-    pom_end = (now + (datetime.timedelta(minutes=25))).isoformat()
-    break_end_time = (now + (datetime.timedelta(minutes=31))).isoformat()
+    pom_end = (now + (datetime.timedelta(minutes=26))).isoformat()
+
     with open(file_name + '.csv') as csvfile:
         tasks = csv.reader(csvfile, delimiter=',')
         for n, i in enumerate(tasks, start=1):
@@ -215,21 +212,19 @@ def createApp(rtm):
                 rtm.tasks.setEstimate(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
                 task_id= i[2], estimate= str(total_time) + 'm')
 
-                rtm.tasksNotes.add(timeline= timelineNum, list_id= i[0], taskseries_id= i[1],
-                task_id= i[2], note_title= 'pomodoro ' + str(total_time/25), note_text= ' ')
-
                 all_pom(i[3], 'pomodoro ' + str(total_time/25))
 
-                rtm.tasks.setDueDate(timeline= timelineNum, list_id= '10509737',
-                taskseries_id= '306248422', task_id= '525100002', due=break_end_time,
-                has_due_time='1', parse='0')
+    break_status = pom_count()
+    if break_status % 4 == 0:
+        print 'Time to take a longer break!'
+        break_end_time = (now + (datetime.timedelta(minutes=41))).isoformat()
+    else:
+        print 'Sorry, you only get a five minute break this time.'
+        break_end_time = (now + (datetime.timedelta(minutes=31))).isoformat()
 
-    # set the due date of the break over task
     rtm.tasks.setDueDate(timeline= timelineNum, list_id= '10509737',
-    taskseries_id= '306248407', task_id= '525100002', due=break_end_time,
+    taskseries_id= '306248422', task_id= '525100002', due=break_end_time,
     has_due_time='1', parse='0')
-
-    pom_count()
 
 # creates RTM (the API keys and token)
 def test(apiKey, secret, token=None):
