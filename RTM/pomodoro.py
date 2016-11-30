@@ -9,9 +9,9 @@ now = datetime.datetime.now()
 todays_date = str(now.month) + '-' + str(now.day) + '-' + str(now.year)
 
 searches = ['custom search',
+            'list:Work-week and due:tod and status:incomplete',
             'list:Work-week and status:incomplete',
             'list:work-week and priority:1 and status:incomplete',
-            'list:Work-week and due:tod and status:incomplete',
             'list:work-Projects and status:incomplete',
             'list:work-Projects priority:1 and status:incomplete',]
 
@@ -93,43 +93,53 @@ def ascii_only(text):
 def parseJson(file):
     data = open(file, 'r')
     parsed_json = json.load(data)
+    # print type(parsed_json['rsp']['tasks'])
     tasks = parsed_json['rsp']['tasks']['list']
     ids_list = list()
     for i in tasks:
         if isinstance(i['taskseries'], list):
             for n in i['taskseries']:
                 add = list() # recreates the list each time
-                add.append(i['id']) # list ID
-                add.append(n['id']) # taskseries ID
-                add.append(n['task']['id']) # task ID
-                add.append(ascii_only(n['name'])) # task name
-                add.append(n['task']['added']) # created date and time
-                add.append(n['task']['completed'])
-                add.append(n['task']['estimate'])
-                add.append(n['task']['due']) # due date
-                ids_list.append(add)
+                # if not repeating, will be a dict
+                if isinstance(n['task'], dict):
+                    add.append(i['id']) # list ID
+                    add.append(n['id']) # taskseries ID
+                    add.append(n['task']['id']) # task ID
+                    add.append(ascii_only(n['name'])) # task name
+                    add.append(n['task']['added']) # created date and time
+                    add.append(n['task']['completed'])
+                    add.append(n['task']['estimate'])
+                    add.append(n['task']['due']) # due date
+                    ids_list.append(add)
+                else:
+                    for g in n['task']:
+                        add = list() # recreates the list each time
+                        add.append('In a list: ')
+                        add.append(i['id']) # list ID
+                        add.append(n['id']) # taskseries ID
+                        add.append(g['id']) # task id for repeating tasks
+                        add.append(ascii_only(n['name'])) # task name
+                        add.append(g['added'])
+                        add.append(g['completed'])
+                        add.append(g['estimate'])
+                        add.append(g['due'])
+                        ids_list.append(add)
         if isinstance(i['taskseries'], dict):
-            for n in i['taskseries']:
-                add = list() # recreates the list each time
-                print (i['id']) # list ID
-                print (n['id']) # taskseries ID
-                print (n['task']['id']) # task ID
-                print (ascii_only(n['name'])) # task name
-                print (n['task']['added']) # created date and time
-                print (n['task']['completed'])
-                print (n['task']['estimate'])
-                add.append(i['id']) # list ID
-                add.append(n['id']) # taskseries ID
-                add.append(n['task']['id']) # task ID
-                add.append(ascii_only(n['name'])) # task name
-                add.append(n['task']['added']) # created date and time
-                add.append(n['task']['completed'])
-                add.append(n['task']['estimate'])
-                ids_list.append(add)
+            add = list() # recreates the list each time
+            add.append(i['id']) # list ID
+            add.append(i['taskseries']['id']) # taskseries ID
+            add.append(i['taskseries']['task']['id']) # task ID
+            add.append(ascii_only(i['taskseries']['name'])) # task name
+            add.append(i['taskseries']['task']['added']) # created date and time
+            add.append(i['taskseries']['task']['completed']) # created date and time
+            add.append(i['taskseries']['task']['estimate'])
+            add.append(i['taskseries']['task']['due'])
+            ids_list.append(add)
 
     with open(file_name + '.csv', 'wb') as f:
         writer = csv.writer(f)
         for i in ids_list:
+            # print i
             writer.writerow(i)
 
 def timer(run):
